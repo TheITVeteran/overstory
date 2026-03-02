@@ -1,14 +1,14 @@
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { realpathSync } from "node:fs";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { resolveModel, resolveProviderEnv } from "../agents/manifest.ts";
 import { HierarchyError } from "../errors.ts";
 import { ClaudeRuntime } from "../runtimes/claude.ts";
 import { getRuntime } from "../runtimes/registry.ts";
-import type { AgentManifest, OverstoryConfig } from "../types.ts";
 import { cleanupTempDir, createTempGitRepo } from "../test-helpers.ts";
+import type { AgentManifest, OverstoryConfig } from "../types.ts";
 import {
 	type AutoDispatchOptions,
 	type BeaconOptions,
