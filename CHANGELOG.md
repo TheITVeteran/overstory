@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-03-03
+
+### Added
+
+#### Coordinator Interaction Subcommands
+- **`ov coordinator send`** — fire-and-forget message to the running coordinator via mail + auto-nudge, replacing the two-step `ov mail send` + `ov nudge` pattern
+- **`ov coordinator ask`** — synchronous request/response to the coordinator; sends a dispatch mail with a `correlationId`, auto-nudges, polls for a reply in the same thread, and exits with the reply body (configurable `--timeout`, default 120s)
+- **`ov coordinator output`** — show recent coordinator output via tmux `capture-pane` (configurable `--lines`, default 100)
+- 334 lines of new test coverage in `src/commands/coordinator.test.ts`
+
+#### Orchestrator Agent Definition
+- **`agents/orchestrator.md`** — new base agent definition for multi-repo coordination above the coordinator level
+- Defines the orchestrator role: dispatches coordinators per sub-repo via `ov coordinator start --project`, monitors via mail, never modifies code directly
+- Named failure modes: `DIRECT_SLING`, `CODE_MODIFICATION`, `SPEC_WRITING`, `OVERLAPPING_REPO_SCOPE`, `OVERLAPPING_FILE_SCOPE`, `DIRECT_MERGE`, `PREMATURE_COMPLETION`, `SILENT_FAILURE`, `POLLING_LOOP`
+- 239 lines of agent definition
+
+#### Operator Message Protocol for Coordinator
+- **`operator-messages`** section added to `agents/coordinator.md` — defines how coordinators handle synchronous human requests from the CLI
+- Reply format: always reply via `ov mail reply` with `correlationId` echo
+- Status request format: structured `Active leads` / `Completed` / `Blockers` / `Next actions`
+- Dispatch, stop, merge, and unrecognized request handling rules
+
+#### `--project` Global Flag
+- **`ov --project <path>`** — target a different project root for any command, overriding auto-detection
+- Validates that the target path contains `.overstory/config.yaml`; throws `ConfigError` if missing
+- `setProjectRootOverride()` / `getProjectRootOverride()` / `clearProjectRootOverride()` in `src/config.ts`
+- 66 lines of new test coverage in `src/config.test.ts`
+
+#### `ov update` Command
+- **`ov update`** — refresh `.overstory/` managed files from the installed npm package without requiring a full `ov init`
+- Refreshes: agent definitions (`agent-defs/*.md`), `agent-manifest.json`, `hooks.json`, `.gitignore`, `README.md`
+- Does NOT touch: `config.yaml`, `config.local.yaml`, SQLite databases, agent state, worktrees, specs, logs, or `.claude/settings.local.json`
+- Flags: `--agents`, `--manifest`, `--hooks`, `--dry-run`, `--json`
+- Excludes deprecated agent defs (`supervisor.md`)
+- 464 lines of test coverage in `src/commands/update.test.ts`
+
+### Changed
+
+- Agent types grew from 7 to 8 (added orchestrator)
+- CLI commands grew from 32 to 34 (added `update`, `coordinator send`, `coordinator ask`, `coordinator output`)
+
+### Testing
+
+- 2923 tests across 92 files (6852 `expect()` calls)
+
 ## [0.7.9] - 2026-03-03
 
 ### Added
@@ -1271,7 +1316,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Biome configuration for formatting and linting
 - TypeScript strict mode with `noUncheckedIndexedAccess`
 
-[Unreleased]: https://github.com/jayminwest/overstory/compare/v0.7.9...HEAD
+[Unreleased]: https://github.com/jayminwest/overstory/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/jayminwest/overstory/compare/v0.7.9...v0.8.0
 [0.7.9]: https://github.com/jayminwest/overstory/compare/v0.7.8...v0.7.9
 [0.7.8]: https://github.com/jayminwest/overstory/compare/v0.7.7...v0.7.8
 [0.7.7]: https://github.com/jayminwest/overstory/compare/v0.7.6...v0.7.7

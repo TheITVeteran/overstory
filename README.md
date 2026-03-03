@@ -74,7 +74,7 @@ ov mail check --inject
 
 ## Commands
 
-Every command supports `--json` where noted. Global flags: `-q`/`--quiet`, `--timing`. ANSI colors respect `NO_COLOR`.
+Every command supports `--json` where noted. Global flags: `-q`/`--quiet`, `--timing`, `--project <path>`. ANSI colors respect `NO_COLOR`.
 
 ### Core Workflow
 
@@ -85,6 +85,7 @@ Every command supports `--json` where noted. Global flags: `-q`/`--quiet`, `--ti
 | `ov stop <agent-name>` | Terminate a running agent (`--clean-worktree`, `--json`) |
 | `ov prime` | Load context for orchestrator/agent (`--agent`, `--compact`) |
 | `ov spec write <task-id>` | Write a task specification (`--body`) |
+| `ov update` | Refresh `.overstory/` managed files from installed package (`--agents`, `--manifest`, `--hooks`, `--dry-run`, `--json`) |
 
 ### Coordination
 
@@ -93,6 +94,9 @@ Every command supports `--json` where noted. Global flags: `-q`/`--quiet`, `--ti
 | `ov coordinator start` | Start persistent coordinator agent (`--attach`/`--no-attach`, `--watchdog`, `--monitor`) |
 | `ov coordinator stop` | Stop coordinator |
 | `ov coordinator status` | Show coordinator state |
+| `ov coordinator send` | Fire-and-forget message to coordinator (`--subject`) |
+| `ov coordinator ask` | Synchronous request/response to coordinator (`--subject`, `--timeout`) |
+| `ov coordinator output` | Show recent coordinator output (`--lines`) |
 | `ov supervisor start` | **[DEPRECATED]** Start per-project supervisor agent |
 | `ov supervisor stop` | **[DEPRECATED]** Stop supervisor |
 | `ov supervisor status` | **[DEPRECATED]** Show supervisor state |
@@ -183,15 +187,17 @@ Overstory is runtime-agnostic. The `AgentRuntime` interface (`src/runtimes/types
 Instruction overlays + tool-call guards + the `ov` CLI turn your coding session into a multi-agent orchestrator. A persistent coordinator agent manages task decomposition and dispatch, while a mechanical watchdog daemon monitors agent health in the background.
 
 ```
-Coordinator (persistent orchestrator at project root)
-  --> Supervisor (per-project team lead, depth 1)
-        --> Workers: Scout, Builder, Reviewer, Merger (depth 2)
+Orchestrator (multi-repo coordinator of coordinators)
+  --> Coordinator (persistent orchestrator at project root)
+        --> Supervisor / Lead (team lead, depth 1)
+              --> Workers: Scout, Builder, Reviewer, Merger (depth 2)
 ```
 
 ### Agent Types
 
 | Agent | Role | Access |
 |-------|------|--------|
+| **Orchestrator** | Multi-repo coordinator of coordinators — dispatches coordinators per sub-repo | Read-only |
 | **Coordinator** | Persistent orchestrator — decomposes objectives, dispatches agents, tracks task groups | Read-only |
 | **Supervisor** | Per-project team lead — manages worker lifecycle, handles nudge/escalation | Read-only |
 | **Scout** | Read-only exploration and research | Read-only |
@@ -223,7 +229,7 @@ overstory/
     config.ts                     Config loader + validation
     errors.ts                     Custom error types
     json.ts                       Standardized JSON envelope helpers
-    commands/                     One file per CLI subcommand (32 commands)
+    commands/                     One file per CLI subcommand (34 commands)
       agents.ts                   Agent discovery and querying
       coordinator.ts              Persistent orchestrator lifecycle
       supervisor.ts               Team lead management [DEPRECATED]
@@ -255,6 +261,7 @@ overstory/
       costs.ts                    Token/cost analysis
       metrics.ts                  Session metrics
       ecosystem.ts                os-eco tool dashboard
+      update.ts                   Refresh managed files
       upgrade.ts                  npm version upgrades
       completions.ts              Shell completion generation (bash/zsh/fish)
     agents/                       Agent lifecycle management
@@ -277,7 +284,7 @@ overstory/
     tracker/                      Pluggable task tracker (beads + seeds backends)
     mulch/                        mulch client (programmatic API + CLI wrapper)
     e2e/                          End-to-end lifecycle tests
-  agents/                         Base agent definitions (.md, 8 roles) + skill definitions
+  agents/                         Base agent definitions (.md, 9 roles) + skill definitions
   templates/                      Templates for overlays and hooks
 ```
 

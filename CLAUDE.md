@@ -51,7 +51,7 @@ Purpose-built messaging via `bun:sqlite` in `.overstory/mail.db`. WAL mode for c
 ```
 overstory/                        # This repo (the overstory tool itself)
   src/
-    index.ts                      # CLI entry point (Commander.js program, 32 commands)
+    index.ts                      # CLI entry point (Commander.js program, 34 commands)
     types.ts                      # ALL shared types and interfaces
     config.ts                     # Config loader + defaults + validation
     errors.ts                     # Custom error types (extend OverstoryError)
@@ -64,7 +64,7 @@ overstory/                        # This repo (the overstory tool itself)
       status.ts                   # ov status
       dashboard.ts                # ov dashboard (live TUI)
       inspect.ts                  # ov inspect (deep agent view)
-      coordinator.ts              # ov coordinator start/stop/status
+      coordinator.ts              # ov coordinator start/stop/status/send/ask/output
       supervisor.ts               # ov supervisor start/stop/status [DEPRECATED]
       hooks.ts                    # ov hooks install/uninstall/status
       mail.ts                     # ov mail send/check/list/read/reply/purge
@@ -88,6 +88,7 @@ overstory/                        # This repo (the overstory tool itself)
       costs.ts                    # ov costs (token/cost analysis)
       metrics.ts                  # ov metrics
       ecosystem.ts                # ov ecosystem (os-eco tool dashboard)
+      update.ts                   # ov update (refresh managed files)
       upgrade.ts                  # ov upgrade (npm version upgrades)
       completions.ts              # ov --completions (shell completions)
     agents/                       # Agent lifecycle management
@@ -158,6 +159,7 @@ overstory/                        # This repo (the overstory tool itself)
     lead.md                       # Team lead (can spawn sub-workers, depth 1)
     supervisor.md                 # Per-project supervisor (can spawn, depth 1) [DEPRECATED]
     coordinator.md                # Top-level orchestrator (spawns leads only, depth 0)
+    orchestrator.md               # Multi-repo coordinator of coordinators (no worktree)
     monitor.md                    # Tier 2 continuous fleet patrol (no worktree)
   templates/
     CLAUDE.md.tmpl                # Template for orchestrator CLAUDE.md
@@ -295,6 +297,20 @@ ov prime                         Load context for orchestrator/agent
 ov spec write <task-id>         Write a spec file to .overstory/specs/
   --body <content>                       Spec content (or pipe via stdin)
   --agent <name>                         Agent attribution
+
+ov update                        Refresh .overstory/ managed files from installed package
+  --agents                               Only refresh agent definitions
+  --manifest                             Only refresh agent-manifest.json
+  --hooks                                Only refresh hooks.json
+  --dry-run                              Show what would change without writing
+  --json                                 JSON output
+
+Global flags (available on all commands):
+  --json                                 JSON output
+  --verbose                              Verbose output
+  --quiet, -q                            Suppress non-error output
+  --timing                               Print command execution time
+  --project <path>                       Target project root (overrides auto-detection)
 ```
 
 ### Coordination Agents
@@ -307,6 +323,13 @@ ov coordinator <sub>            Persistent coordinator agent
     --monitor                            Auto-start Tier 2 monitor agent
   stop                                   Stop coordinator (kills tmux session)
   status                                 Show coordinator state
+  send <body>                            Fire-and-forget message to coordinator (mail + auto-nudge)
+    --subject <text>                     Message subject (required)
+  ask <body>                             Synchronous request/response to coordinator
+    --subject <text>                     Message subject (required)
+    --timeout <seconds>                  Reply timeout (default: 120)
+  output                                 Show recent coordinator output (tmux pane content)
+    --lines <n>                          Number of lines to capture (default: 100)
   --json                                 JSON output
 
 ov supervisor <sub>             [DEPRECATED] Per-project supervisor agent

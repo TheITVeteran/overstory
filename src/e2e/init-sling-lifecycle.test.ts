@@ -30,6 +30,7 @@ const EXPECTED_AGENT_DEFS = [
 	"lead.md",
 	"merger.md",
 	"monitor.md",
+	"orchestrator.md",
 	"reviewer.md",
 	"scout.md",
 ];
@@ -81,7 +82,7 @@ describe("E2E: init→sling lifecycle on external project", () => {
 		const gitignoreFile = Bun.file(join(overstoryDir, ".gitignore"));
 		expect(await gitignoreFile.exists()).toBe(true);
 
-		// agent-defs/ contains all 7 agent definition files (supervisor deprecated)
+		// agent-defs/ contains all 8 agent definition files (supervisor deprecated)
 		const agentDefsDir = join(overstoryDir, "agent-defs");
 		const agentDefFiles = (await readdir(agentDefsDir)).filter((f) => f.endsWith(".md")).sort();
 		expect(agentDefFiles).toEqual(EXPECTED_AGENT_DEFS);
@@ -113,7 +114,7 @@ describe("E2E: init→sling lifecycle on external project", () => {
 		expect(config.project.name).toBeTruthy();
 	});
 
-	test("manifest loads successfully with all 7 agents (supervisor deprecated)", async () => {
+	test("manifest loads successfully with all 8 agents (supervisor deprecated)", async () => {
 		await initCommand({ _spawner: noopSpawner });
 
 		const manifestPath = join(tempDir, ".overstory", "agent-manifest.json");
