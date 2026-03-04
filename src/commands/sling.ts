@@ -743,6 +743,9 @@ export async function slingCommand(taskId: string, opts: SlingOptions): Promise<
 			}
 		}
 
+		// Resolve runtime before overlayConfig so we can pass runtime.instructionPath
+		const runtime = getRuntime(opts.runtime, config);
+
 		const overlayConfig: OverlayConfig = {
 			agentName: name,
 			taskId: taskId,
@@ -768,10 +771,8 @@ export async function slingCommand(taskId: string, opts: SlingOptions): Promise<
 			qualityGates: config.project.qualityGates,
 			trackerCli: trackerCliName(resolvedBackend),
 			trackerName: resolvedBackend,
+			instructionPath: runtime.instructionPath,
 		};
-
-		// Resolve runtime before writeOverlay so we can pass runtime.instructionPath
-		const runtime = getRuntime(opts.runtime, config);
 
 		try {
 			await writeOverlay(worktreePath, overlayConfig, config.project.root, runtime.instructionPath);

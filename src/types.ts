@@ -343,6 +343,8 @@ export interface OverlayConfig {
 	trackerName?: string; // "seeds" or "beads"
 	/** Quality gate commands for the agent overlay. Falls back to defaults if undefined. */
 	qualityGates?: QualityGate[];
+	/** Relative path to the instruction file within the worktree (runtime-specific). Defaults to .claude/CLAUDE.md. */
+	instructionPath?: string;
 }
 
 // === Merge Queue ===
