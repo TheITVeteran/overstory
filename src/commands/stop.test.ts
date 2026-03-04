@@ -260,13 +260,61 @@ describe("stopCommand validation", () => {
 		await expect(stopCommand("my-builder", {}, deps)).rejects.toThrow(/already completed/);
 	});
 
-	test("throws AgentError when agent is already zombie", async () => {
+	test("succeeds when agent is zombie (cleanup, no error)", async () => {
 		const session = makeAgentSession({ state: "zombie" });
 		saveSessionsToDb([session]);
 
-		const { deps } = makeDeps();
-		await expect(stopCommand("my-builder", {}, deps)).rejects.toThrow(AgentError);
-		await expect(stopCommand("my-builder", {}, deps)).rejects.toThrow(/zombie/);
+		const { deps } = makeDeps({ [session.tmuxSession]: false });
+		const output = await captureStdout(() => stopCommand("my-builder", {}, deps));
+
+		expect(output).toContain("Agent stopped");
+		expect(output).toContain("Zombie agent cleaned up");
+
+		const { store } = openSessionStore(overstoryDir);
+		const updated = store.getByName("my-builder");
+		store.close();
+		expect(updated?.state).toBe("completed");
+	});
+});
+
+describe("stopCommand zombie cleanup", () => {
+	test("zombie + --clean-worktree removes worktree", async () => {
+		const session = makeAgentSession({ state: "zombie" });
+		saveSessionsToDb([session]);
+
+		const { deps, worktreeCalls } = makeDeps({ [session.tmuxSession]: false });
+		const output = await captureStdout(() =>
+			stopCommand("my-builder", { cleanWorktree: true }, deps),
+		);
+
+		expect(output).toContain("Agent stopped");
+		expect(output).toContain("Zombie agent cleaned up");
+		expect(output).toContain(`Worktree removed: ${session.worktreePath}`);
+		expect(worktreeCalls.remove).toHaveLength(1);
+
+		const { store } = openSessionStore(overstoryDir);
+		const updated = store.getByName("my-builder");
+		store.close();
+		expect(updated?.state).toBe("completed");
+	});
+
+	test("zombie + --json includes wasZombie: true", async () => {
+		const session = makeAgentSession({ state: "zombie" });
+		saveSessionsToDb([session]);
+
+		const { deps } = makeDeps({ [session.tmuxSession]: false });
+		const output = await captureStdout(() => stopCommand("my-builder", { json: true }, deps));
+
+		const parsed = JSON.parse(output.trim()) as Record<string, unknown>;
+		expect(parsed.success).toBe(true);
+		expect(parsed.stopped).toBe(true);
+		expect(parsed.wasZombie).toBe(true);
+		expect(parsed.agentName).toBe("my-builder");
+
+		const { store } = openSessionStore(overstoryDir);
+		const updated = store.getByName("my-builder");
+		store.close();
+		expect(updated?.state).toBe("completed");
 	});
 });
 

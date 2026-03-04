@@ -86,9 +86,7 @@ export async function stopCommand(
 			throw new AgentError(`Agent "${agentName}" is already completed`, { agentName });
 		}
 
-		if (session.state === "zombie") {
-			throw new AgentError(`Agent "${agentName}" is already zombie (dead)`, { agentName });
-		}
+		const isZombie = session.state === "zombie";
 
 		const isHeadless = session.tmuxSession === "" && session.pid !== null;
 
@@ -140,6 +138,7 @@ export async function stopCommand(
 				pidKilled,
 				worktreeRemoved,
 				force,
+				wasZombie: isZombie,
 			});
 		} else {
 			printSuccess("Agent stopped", agentName);
@@ -155,6 +154,9 @@ export async function stopCommand(
 				} else {
 					process.stdout.write(`  Tmux session was already dead\n`);
 				}
+			}
+			if (isZombie) {
+				process.stdout.write(`  Zombie agent cleaned up (state → completed)\n`);
 			}
 			if (cleanWorktree && worktreeRemoved) {
 				process.stdout.write(`  Worktree removed: ${session.worktreePath}\n`);
