@@ -1,11 +1,7 @@
 {
-	"inspect-headless-builder": 1772722899850,
-	"sapling-bugs-lead": 1772722839509,
-	"sapling-fix-builder": 1772722776118,
-	"opencode-rt-builder": 1772722722037,
-	"coordinator": 1772723880574,
-	"headless-obs-lead": 1772723172548,
-	"event-tailer-builder": 1772723127879,
-	"opencode-rt-lead": 1772722848681,
-	"lint-fix-builder": 1772723433253
+	"exit-config-builder": 1772758352140,
+	"coordinator": 1772758766342,
+	"coordinator-exit-lead": 1772758767668,
+	"check-complete-builder": 1772758755309,
+	"completion-proto-builder": 1772758733281
 }
