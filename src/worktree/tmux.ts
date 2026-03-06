@@ -111,7 +111,19 @@ export async function createSession(
 		}
 	}
 
-	const wrappedCommand = exports.length > 0 ? `${exports.join(" && ")} && ${command}` : command;
+	// Build the startup script using bash syntax (export/unset).
+	// Then wrap it in `/bin/bash -c '...'` so it always runs in bash,
+	// regardless of the user's $SHELL. Without this, tmux uses the user's
+	// default shell (e.g. fish), which rejects bash export/unset syntax and
+	// causes the session to die instantly. Single-quote wrapping with escaped
+	// single quotes prevents any intermediate shell from expanding variables
+	// before bash receives them. (GitHub #86)
+	const startupScript =
+		exports.length > 0 ? `${exports.join(" && ")} && ${command}` : command;
+	const wrappedCommand =
+		exports.length > 0
+			? `/bin/bash -c '${startupScript.replace(/'/g, "'\\''")}'`
+			: command;
 
 	const { exitCode, stderr } = await runCommand(
 		["tmux", "new-session", "-d", "-s", name, "-c", cwd, wrappedCommand],
