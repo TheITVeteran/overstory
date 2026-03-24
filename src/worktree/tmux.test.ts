@@ -13,6 +13,7 @@ import {
 	killProcessTree,
 	killSession,
 	listSessions,
+	sanitizeTmuxName,
 	sendKeys,
 	waitForTuiReady,
 } from "./tmux.ts";
@@ -1548,5 +1549,40 @@ describe("ensureTmuxAvailable", () => {
 			const agentErr = err as AgentError;
 			expect(agentErr.message).toContain("tmux is not installed");
 		}
+	});
+});
+
+describe("sanitizeTmuxName", () => {
+	test("replaces dots with underscores", () => {
+		expect(sanitizeTmuxName("consulting.jayminwest.com")).toBe("consulting_jayminwest_com");
+	});
+
+	test("replaces colons with underscores", () => {
+		expect(sanitizeTmuxName("host:8080")).toBe("host_8080");
+	});
+
+	test("replaces mixed dots and colons", () => {
+		expect(sanitizeTmuxName("my.project:v2.0")).toBe("my_project_v2_0");
+	});
+
+	test("leaves names without special characters unchanged", () => {
+		expect(sanitizeTmuxName("my-project")).toBe("my-project");
+	});
+
+	test("handles empty string", () => {
+		expect(sanitizeTmuxName("")).toBe("");
+	});
+
+	test("handles name with only dots", () => {
+		expect(sanitizeTmuxName("...")).toBe("___");
+	});
+
+	test("produces valid tmux session name components", () => {
+		// A real-world project name that would break tmux target parsing
+		const projectName = "consulting.jayminwest.com";
+		const sessionName = `overstory-${sanitizeTmuxName(projectName)}-coordinator`;
+		expect(sessionName).toBe("overstory-consulting_jayminwest_com-coordinator");
+		// No dots or colons that tmux would interpret as separators
+		expect(sessionName).not.toMatch(/[.:]/);
 	});
 });

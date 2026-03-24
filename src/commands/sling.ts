@@ -48,6 +48,7 @@ import {
 	ensureTmuxAvailable,
 	isSessionAlive,
 	killSession,
+	sanitizeTmuxName,
 	sendKeys,
 	waitForTuiReady,
 } from "../worktree/tmux.ts";
@@ -1004,7 +1005,7 @@ export async function slingCommand(taskId: string, opts: SlingOptions): Promise<
 				await ensureTmuxAvailable();
 
 				// 12. Create tmux session running claude in interactive mode
-				const tmuxSessionName = `overstory-${config.project.name}-${name}`;
+				const tmuxSessionName = `overstory-${sanitizeTmuxName(config.project.name)}-${name}`;
 				const spawnCmd = runtime.buildSpawnCommand({
 					model: resolvedModel.model,
 					permissionMode: "bypass",

@@ -22,6 +22,19 @@ import type { ReadyState } from "../runtimes/types.ts";
 export const TMUX_SOCKET = "overstory";
 
 /**
+ * Sanitize a name component for use in tmux session names.
+ *
+ * Tmux interprets dots (.) as session.window.pane separators and colons (:)
+ * as session:window separators in target strings (`-t`). If a project name
+ * contains these characters (e.g., "consulting.jayminwest.com"), the session
+ * is created fine but subsequent lookups via `-t` parse the dots as delimiters
+ * and fail to find the session. Replace both with underscores.
+ */
+export function sanitizeTmuxName(name: string): string {
+	return name.replace(/[.:]/g, "_");
+}
+
+/**
  * Build a tmux command array with the dedicated server socket.
  * All agent session operations should use this to ensure isolation.
  */

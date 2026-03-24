@@ -37,6 +37,7 @@ import {
 	killProcessTree,
 	killSession,
 	listSessions,
+	sanitizeTmuxName,
 } from "../worktree/tmux.ts";
 
 export interface CleanOptions {
@@ -155,7 +156,7 @@ interface CleanResult {
  */
 async function killAllTmuxSessions(overstoryDir: string, projectName: string): Promise<number> {
 	let killed = 0;
-	const projectPrefix = `overstory-${projectName}-`;
+	const projectPrefix = `overstory-${sanitizeTmuxName(projectName)}-`;
 	try {
 		const tmuxSessions = await listSessions();
 		const overStorySessions = tmuxSessions.filter((s) => s.name.startsWith(projectPrefix));
