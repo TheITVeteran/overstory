@@ -10,6 +10,8 @@ Overstory turns a single coding session into a multi-agent team by spawning work
 
 > **Warning: Agent swarms are not a universal solution.** Do not deploy Overstory without understanding the risks of multi-agent orchestration — compounding error rates, cost amplification, debugging complexity, and merge conflicts are the normal case, not edge cases. Read [STEELMAN.md](STEELMAN.md) for a full risk analysis and the [Agentic Engineering Book](https://github.com/jayminwest/agentic-engineering-book) ([web version](https://jayminwest.com/agentic-engineering-book)) before using this tool in production.
 
+> **Maintenance status.** Overstory is maintained part-time. PRs are reviewed in roughly 2-week batches; PRs inactive for 30+ days are closed (reopen anytime). For features larger than ~200 lines, open an issue or discussion first. See [CONTRIBUTING.md](CONTRIBUTING.md#review-cadence).
+
 ## Install
 
 Requires [Bun](https://bun.sh) v1.0+, git, and tmux. At least one supported agent runtime must be installed:
